@@ -2,16 +2,16 @@ from typing import List
 
 import torch
 
-from .align_models import get_bundle
-from .align_utils import (Alignment, backtrack, get_trellis, merge_repeats,
-                          merge_words)
 from .common import SAMPLE_RATE, Range
+from .forced import (Alignment, backtrack, get_trellis, merge_repeats,
+                     merge_words)
+from .models import get_bundle
 from .preprocess import LANGUAGES_WITHOUT_SPACES, tokenize
 from .vad import get_speech_ranges
 
 
-def align(text: str, waveform: torch.Tensor,
-          language_code: str, device="cpu", letter_wise=False) -> List[Alignment]:
+def align(text: str, waveform: torch.Tensor, language_code: str, 
+          device="cpu", letter_wise=False, on_progress=lambda n,t: None) -> List[Alignment]:
 
     model, labels = get_bundle(language_code, device)
     waveform = waveform.to(device)
@@ -20,16 +20,17 @@ def align(text: str, waveform: torch.Tensor,
     time_mappings: List[Range] = []
     time_mapping_offset = 0
     emission_list: List[torch.Tensor] = []
-    
-    for time_range in time_ranges:
+
+    for i, time_range in enumerate(time_ranges):
+        on_progress(i, len(time_ranges))
         sub_waveform = waveform[time_range.start:time_range.end]
         with torch.inference_mode():
             emissions = model(sub_waveform.unsqueeze(0))
             emissions = torch.log_softmax(emissions, dim=-1)
             emission = emissions[0].cpu().detach()
             emission_list.append(emission)
-            time_mappings.append(Range(time_mapping_offset, 
-                                         time_mapping_offset + len(emission)))
+            time_mappings.append(Range(time_mapping_offset,
+                                       time_mapping_offset + len(emission)))
             time_mapping_offset += len(emission)
 
     emission = torch.concat(emission_list, dim=0)
@@ -53,17 +54,18 @@ def align(text: str, waveform: torch.Tensor,
     return alignments
 
 
-
-def map_time_range(alignment: Alignment, time_ranges: List[range], 
-                          time_mappings: List[range]) -> Alignment:
+def map_time_range(alignment: Alignment, time_ranges: List[range],
+                   time_mappings: List[range]) -> Alignment:
     time_index = alignment.end_time_index
     for time_range, time_mapping in zip(time_ranges, time_mappings):
         if time_mapping.start <= time_index and time_index < time_mapping.end:
             time_mapping_duration = time_mapping.end - time_mapping.start
             time_range_duration = time_range.end - time_range.start
             ratio = time_range_duration / time_mapping_duration
-            start = (alignment.start_time_index - time_mapping.start) * ratio + time_range.start
-            end = (alignment.end_time_index - time_mapping.start) * ratio + time_range.start
+            start = (alignment.start_time_index -
+                     time_mapping.start) * ratio + time_range.start
+            end = (alignment.end_time_index - time_mapping.start) * \
+                ratio + time_range.start
             return start / SAMPLE_RATE, end / SAMPLE_RATE
     raise ValueError("time_index not in time_mappings")
 

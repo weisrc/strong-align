@@ -3,21 +3,13 @@ This is slightly modified version of the code from the link below.
 https://pytorch.org/audio/main/tutorials/forced_alignment_tutorial.html
 """
 
-from dataclasses import dataclass
-from .preprocess import SPACE_RE
-from typing import Iterable, List
-import torch
 import re
+from typing import Iterable, List
 
-from .common import Alignment
+import torch
 
-
-@dataclass
-class Point:
-    token_index: int
-    time_index: int
-    score: float
-
+from .common import Alignment, Point
+from .preprocess import SPACE_RE
 
 
 def get_trellis(emission, tokens, blank_id=0):
@@ -109,7 +101,8 @@ def merge_words(segments: List[Alignment], text: str) -> List[Alignment]:
             if i1 != i2:
                 word_segments = segments[i1:i2]
                 score_sum = sum(seg.score for seg in word_segments)
-                word_length = sum(seg.end_time_index - seg.start_time_index for seg in word_segments)
+                word_length = sum(seg.end_time_index -
+                                  seg.start_time_index for seg in word_segments)
                 words.append(Alignment(
                     start_token_index=segments[i1].start_token_index,
                     end_token_index=segments[i2 - 1].end_token_index,

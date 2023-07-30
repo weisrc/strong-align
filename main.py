@@ -25,7 +25,7 @@ Thank you!
 waveform = waveform.squeeze(0)
 waveform = torch.concat([waveform] * TIMES, dim=0)
 
-alignments = align(text, waveform, "en")
+alignments = align(text, waveform, "en", on_progress=print)
 
 with open("data/doctor.json", "w") as f:
     f.write(json.dumps(list(map(dataclasses.asdict, alignments))))

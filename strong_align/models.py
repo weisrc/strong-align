@@ -4,7 +4,7 @@ import torchaudio
 from torchaudio.pipelines import Wav2Vec2ASRBundle
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 
-ALIGN_MODELS = {
+MODELS = {
     "en": "WAV2VEC2_ASR_BASE_960H",
     "fr": "VOXPOPULI_ASR_BASE_10K_FR",
     "de": "VOXPOPULI_ASR_BASE_10K_DE",
@@ -32,7 +32,7 @@ ALIGN_MODELS = {
 
 @lru_cache
 def get_bundle(language_code: str, device: str) -> Tuple[lambda x: x, dict]:
-    name = ALIGN_MODELS.get(language_code, "WAV2VEC2_ASR_BASE_960H")
+    name = MODELS.get(language_code, "WAV2VEC2_ASR_BASE_960H")
     if name in torchaudio.pipelines.__all__:
         bundle: Wav2Vec2ASRBundle = torchaudio.pipelines.__dict__[name]
         model = bundle.get_model().to(device)

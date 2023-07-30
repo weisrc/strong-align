@@ -2,11 +2,19 @@ from dataclasses import dataclass
 
 SAMPLE_RATE = 16000
 
+
+@dataclass
+class Point:
+    token_index: int
+    time_index: int
+    score: float
+
+
 @dataclass
 class Range:
     start: float = 0.0
     end: float = 0.0
-    
+
 
 @dataclass
 class Alignment(Range):
