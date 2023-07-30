@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <audio src="data/out.wav" controls></audio>
+    <p id="test" style="user-select: none"></p>
+    <script type="module">
+      const p = document.getElementById("test");
+      const res = await fetch("data/doctor.json");
+      const data = await res.json();
+      for (const item of data) {
+        console.log(item);
+        const span = document.createElement("span");
+        span.textContent = item.text + " ";
+        p.appendChild(span);
+        span.dataset.start = item.start;
+        span.dataset.end = item.end;
+        span.onclick = () => {
+          const audio = document.querySelector("audio");
+          audio.currentTime = item.start;
+          audio.play();
+        };
+      }
+
+      const audio = document.querySelector("audio");
+      function render() {
+        const time = audio.currentTime;
+        for (const span of p.querySelectorAll("span")) {
+          const start = parseFloat(span.dataset.start);
+          const end = parseFloat(span.dataset.end);
+          if (time >= start && time <= end) {
+            span.style.color = "red";
+          } else {
+            span.style.color = "black";
+          }
+        }
+        requestAnimationFrame(render);
+      }
+      render();
+    </script>
+  </body>
+</html>

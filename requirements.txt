@@ -1,0 +1,4 @@
+torchaudio
+torch
+transformers
+num2words
