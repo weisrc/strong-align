@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-SAMPLE_RATE = 16000
+ALIGN_SR = 16000
 
 
 @dataclass

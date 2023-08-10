@@ -1,5 +1,5 @@
-from .align import align, Alignment, get_speech_ranges
+from .align import ALIGN_SR, Alignment, align, get_speech_ranges
 
 __version__ = "0.0.1"
 
-__all__ = ["align", "Alignment", "get_speech_ranges", "__version__"]
+__all__ = ["ALIGN_SR", "align", "Alignment", "get_speech_ranges", "__version__"]

@@ -2,7 +2,7 @@ from typing import List
 
 import torch
 
-from .common import SAMPLE_RATE, Range
+from .common import ALIGN_SR, Range
 from .forced import (Alignment, backtrack, get_trellis, merge_repeats,
                      merge_words)
 from .models import get_bundle
@@ -11,10 +11,9 @@ from .vad import get_speech_ranges
 
 
 def align(text: str, waveform: torch.Tensor, language_code: str, 
-          device="cpu", letter_wise=False, on_progress=lambda n,t: None) -> List[Alignment]:
+          letter_wise=False, on_progress=lambda n,t: None) -> List[Alignment]:
 
-    model, labels = get_bundle(language_code, device)
-    waveform = waveform.to(device)
+    model, labels = get_bundle(language_code, waveform.device)
     tokens, mappings = tokenize(text, language_code, labels)
     time_ranges = get_speech_ranges(waveform)
     time_mappings: List[Range] = []
@@ -66,7 +65,7 @@ def map_time_range(alignment: Alignment, time_ranges: List[range],
                      time_mapping.start) * ratio + time_range.start
             end = (alignment.end_time_index - time_mapping.start) * \
                 ratio + time_range.start
-            return start / SAMPLE_RATE, end / SAMPLE_RATE
+            return start / ALIGN_SR, end / ALIGN_SR
     raise ValueError("time_index not in time_mappings")
 
 
