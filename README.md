@@ -39,7 +39,7 @@ out = align(text, audio, "en",
       normalize_func=NORMALIZE_FUNCS+[my_normalize_normalize])
 ```
 
-> Please refer to the `preprocess.py` file for examples of normalization functions.
+> Please refer to the `normalize.py` file for examples of normalization functions.
 
 ## License
 
