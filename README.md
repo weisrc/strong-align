@@ -8,6 +8,8 @@ Forced alignment using Wav2Vec2
 pip install git+https://github.com/weisrc/strong-align.git 
 ```
 
+> :warning: **Warning**: This package is still in development. The API may change in the future.
+
 ## Usage
 
 ```python
@@ -23,7 +25,21 @@ out = align(text, audio, "en", on_progress=print)
 print(out)
 ```
 
-> :warning: **Warning**: This package is still in development. The API may change in the future.
+## Custom normalization
+
+You can use your own normalization function by passing it to the `align` function.
+
+```python
+from strong_align.preprocess import NORMALIZE_FUNCS
+
+def my_normalize_normalize(text, mappings, language, labels):
+    return text, mappings
+
+out = align(text, audio, "en", 
+      normalize_func=NORMALIZE_FUNCS+[my_normalize_normalize])
+```
+
+> Please refer to the `preprocess.py` file for examples of normalization functions.
 
 ## License
 
