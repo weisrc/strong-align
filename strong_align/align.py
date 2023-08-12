@@ -6,16 +6,21 @@ from .common import ALIGN_SR, Range
 from .forced import (Alignment, backtrack, get_trellis, merge_repeats,
                      merge_words)
 from .models import get_bundle
-from .preprocess import LANGUAGES_WITHOUT_SPACES, tokenize
+from .preprocess import (LANGUAGES_WITHOUT_SPACES, NORMALIZE_FUNCS,
+                         normalize, tokenize)
 from .vad import get_speech_ranges
 
 
-def align(text: str, waveform: torch.Tensor, language_code: str, 
-          letter_wise=False, on_progress=lambda n,t: None) -> List[Alignment]:
+def align(text: str, waveform: torch.Tensor, language_code: str,
+          letter_wise=False, on_progress=lambda n, t: None,
+          time_ranges: List[Range] = None,
+          normalize_funcs=NORMALIZE_FUNCS) -> List[Alignment]:
 
     model, labels = get_bundle(language_code, waveform.device)
-    tokens, mappings = tokenize(text, language_code, labels)
-    time_ranges = get_speech_ranges(waveform)
+    normalized_text, mappings = normalize(text, language_code, labels, normalize_funcs)
+    tokens, mappings = tokenize(normalized_text, mappings, labels)
+
+    time_ranges = time_ranges or get_speech_ranges(waveform)
     time_mappings: List[Range] = []
     time_mapping_offset = 0
     emission_list: List[torch.Tensor] = []
@@ -37,6 +42,7 @@ def align(text: str, waveform: torch.Tensor, language_code: str,
     points = backtrack(trellis, emission, tokens)
     if points is None:
         return None
+    
     alignments = merge_repeats(points)
     alignments = map_alignments(alignments, len(text), mappings)
     alignments = interpolate_alignments(alignments, len(emission))

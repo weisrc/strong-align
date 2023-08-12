@@ -35,12 +35,14 @@ def get_bundle(language_code: str, device: str) -> Tuple[lambda x: x, dict]:
     name = MODELS.get(language_code, "WAV2VEC2_ASR_BASE_960H")
     if name in torchaudio.pipelines.__all__:
         bundle: Wav2Vec2ASRBundle = torchaudio.pipelines.__dict__[name]
-        model = bundle.get_model().to(device)
-        labels = enumerate(bundle.get_labels())
-        return lambda x: model(x)[0], {v.lower(): k for k, v in labels}
+        raw_model = bundle.get_model().to(device)
+        raw_labels = enumerate(bundle.get_labels())
+        model = lambda x: raw_model(x)[0]
+        labels = {v.lower(): k for k, v in raw_labels}
     else:
         processor = Wav2Vec2Processor.from_pretrained(name)
         raw_model = Wav2Vec2ForCTC.from_pretrained(name).to(device)
+        raw_labels = processor.tokenizer.get_vocab()
         model = lambda x: raw_model(x).logits
-        labels = processor.tokenizer.get_vocab()
-        return model, {k.lower(): v for k, v in labels.items()}
+        labels = {k.lower(): v for k, v in raw_labels.items()}
+    return model, {' ' if k == '|' else k: v for k, v in labels.items()}
