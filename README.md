@@ -18,7 +18,7 @@ text = "Hello world! This is a test."
 audio, sr = torchaudio.load("test.wav")
 audio = audio[0]
 audio = torchaudio.transforms.Resample(sr, 16000)(audio)
-audio.to("cuda") # or "cpu"
+audio = audio.to("cuda") # or keep it on the CPU
 out = align(text, audio, "en", on_progress=print)
 print(out)
 ```

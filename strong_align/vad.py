@@ -1,5 +1,6 @@
 import warnings
 from typing import List
+from functools import lru_cache
 
 import torch
 
@@ -11,8 +12,12 @@ vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
 _get_speech_timestamps, *_ = utils
 
 
-def get_speech_ranges(wav: torch.Tensor) -> List[Range]:
+@lru_cache(maxsize=1)
+def get_vad_model(device: torch.device) -> torch.nn.Module:
+    return vad_model.to(device)
+
+def get_speech_ranges(waveform: torch.Tensor) -> List[Range]:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        timestamps = _get_speech_timestamps(wav, vad_model)
+        timestamps = _get_speech_timestamps(waveform, get_vad_model(waveform.device))
     return [Range(timestamp['start'], timestamp['end']) for timestamp in timestamps]
