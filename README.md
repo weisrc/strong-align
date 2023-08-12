@@ -5,12 +5,14 @@ Forced alignment using Wav2Vec2
 ## Installation
 
 ```bash
-pip install git+https://github.com/weisrc/strong-align.git 
+pip install git+https://github.com/weisrc/strong-align.git
 ```
 
 > :warning: **Warning**: This package is still in development. The API may change in the future.
 
 ## Usage
+
+### Basic
 
 ```python
 import torchaudio
@@ -25,17 +27,22 @@ out = align(text, audio, "en", on_progress=print)
 print(out)
 ```
 
-## Custom normalization
+### Custom normalization
 
 You can use your own normalization function by passing it to the `align` function.
+
+Special use case:
+
+- Romanizing the text to use the English model for languages such as Chinese, Japanese, Korean, etc.
 
 ```python
 from strong_align.preprocess import NORMALIZE_FUNCS
 
 def my_normalize_normalize(text, mappings, language, labels):
+    # do something with text and mappings
     return text, mappings
 
-out = align(text, audio, "en", 
+out = align(text, audio, "en",
       normalize_func=NORMALIZE_FUNCS+[my_normalize_normalize])
 ```
 
